@@ -80,7 +80,10 @@ The MIMIC-CXR and MIMIC-ECG notebooks also read `patients.csv` from MIMIC-IV
 ## Reproducing the results
 
 With `--train_random_subset=True`, a training script trains one model on the next unclaimed patient
-subset of `--logdir` and saves its predictions. `scripts/run_until_error.sh` repeats this until all
+subset of `--logdir` and saves its predictions. The subsets of all `--n_runs` runs are drawn once, by
+the first run on a logdir, and stored in `<logdir>/super_mask.npy`, a boolean matrix of shape
+`(n_runs, n_patients)`. Each patient is included in exactly half of the runs (`--subset_ratio=0.5`),
+so every record has the same number of IN and OUT models. `scripts/run_until_error.sh` repeats this until all
 runs of the logdir are complete. The same command can be started on any number of GPUs or machines at
 the same time, as long as they share the repository directory. The default flag values of the training
 scripts are the settings used in the paper.
@@ -117,9 +120,45 @@ subsequent memorisation detection analysis took about 25 minutes.
    LOG_ROOT=logs bash scripts/run_analysis.sh
    ```
 
-Training writes one directory per run, `<logdir>/<wandb_run_id>/`, containing the model outputs for
-the historical, future and test splits (`{train,long_eval,test}_logits.npy`), the patient subset mask
-and `info.json`, in this layout:
+### Log directories
+
+Training writes to `--logdir` a set of bookkeeping files shared by all runs and one directory per
+completed run, named after its wandb run ID:
+
+```
+<logdir>/
+├── super_mask.npy               patient subset masks of all runs, (n_runs, n_patients)
+├── valid_idcs.pkl               indices of runs not yet claimed
+├── completed_idcs.pkl           indices of completed runs
+├── bookkeeping.lock             lock for training in parallel
+└── <wandb_run_id>/
+    ├── train_logits.npy         model outputs on the historical split
+    ├── long_eval_logits.npy     ... on the future split
+    ├── test_logits.npy          ... on the test split
+    ├── patient_subset_mask.npy  True for the patients this run was trained on
+    ├── patient_ids.pkl          patient IDs of the historical split, in the order of the mask
+    └── info.json                run metadata
+```
+
+Model outputs have shape `(n_records, n_classes)`, with records in the order of the split file in `data/csv/`.
+They are logits, except for sklearn models, which save predicted probabilities. With test-time
+augmentation (`mimic-cxr.py --eval_views`) there is an additional axis,
+`(n_records, n_views, n_classes)`.
+
+`info.json` contains:
+
+| Key | Content |
+|---|---|
+| `wandb_run_id`, `start_time`, `end_time`, `mac_address` | run identification |
+| `wandb_config` | all flags of the run, plus `run_seed`; sklearn runs also record `model_class` |
+| `train_metrics` | metrics on the run's training subset |
+| `test_metrics` | metrics on the test split, e.g. `_test_macro_auroc` |
+
+The memorisation analysis reads the model outputs, `patient_subset_mask.npy` and `patient_ids.pkl`.
+It checks `wandb_config` for `model_class` to decide whether an activation function must be
+applied. The figure scripts read test AUROC from `test_metrics`.
+
+The log directories of all experiments are organised as follows:
 
 ```
 logs/
@@ -130,6 +169,8 @@ logs/
     ├── dp/eps{1,10,100,1000}[_p]/    DP-SGD, record-level [patient-level]
     └── nonprivate[_p]/               ε = ∞
 ```
+
+### Analysis outputs
 
 `scripts/run_analysis.sh` writes results and figures to `figs/`:
 

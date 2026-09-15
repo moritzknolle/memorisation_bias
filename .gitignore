@@ -4,7 +4,7 @@ __pycache__/
 .ipynb_checkpoints/
 .mypy_cache/
 mypy.ini
-data/
+/data/
 logs/
 figs/
 tmp/
