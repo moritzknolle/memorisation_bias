@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.swp
+.ipynb_checkpoints/
+.mypy_cache/
+mypy.ini
+data/
+logs/
+figs/
+tmp/
+wandb/

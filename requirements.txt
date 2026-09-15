@@ -1,0 +1,24 @@
+# Pinned dependencies. jax-privacy is installed separately with --no-deps, see README.md.
+jax[cuda13]==0.8.0
+keras==3.12.0
+tensorflow-cpu==2.20.0
+optax @ git+https://github.com/google-deepmind/optax.git@75c97f8e337d307e557a77b224891a3723c2fa4a
+dp_accounting @ git+https://github.com/google/differential-privacy.git@b894a37c38a4bd134883228a9966043ddeadf3c8#subdirectory=python/dp_accounting
+chex==0.1.90
+pydantic==2.12.4
+numpy==2.3.4
+pandas==2.3.3
+scipy==1.16.3
+scikit-learn==1.7.2
+statsmodels==0.14.5
+hyppo==0.5.2
+wfdb==4.3.0
+joblib==1.5.2
+matplotlib==3.10.7
+h5py==3.15.1
+pillow==12.0.0
+tqdm==4.67.1
+absl-py==1.4.0
+protobuf==6.33.0
+wandb==0.23.1
+jupyter
