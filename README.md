@@ -5,10 +5,10 @@ This repository allows us to quantify whether, and to what extent, the inclusion
 historical records in a model training dataset causes a significant change in the predictions
 on their unseeen future data.
 
-For each dataset, 200 models are trained on random 50% patient subsets. For every record,
-the predictions of models trained on the patient's historical records (IN) are compared to those
-of models that were not (OUT) using a multivariate two-sample test with Benjamini–Hochberg
-correction. See the paper for details.
+For each dataset, 200 models are trained on the historical data of random 50% patient subsets.
+For every record, the predictions of models trained on the patient's historical records (IN)
+are compared to those of models that were not (OUT) using a multivariate two-sample test with
+Benjamini–Hochberg correction. See the paper for details.
 
 ## Repository structure
 
